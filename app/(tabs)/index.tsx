@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useColors } from "@/hooks/use-colors";
 import { useHistory } from "@/lib/history-context";
+import { triggerLightHaptic } from "@/lib/haptics";
 
 const INITIAL_PRODUCTS: Product[] = [
   {
@@ -65,6 +66,7 @@ export default function HomeScreen() {
   // 商品を追加
   const handleAddProduct = useCallback(() => {
     if (products.length < 4) {
+      triggerLightHaptic();
       const newId = generateProductId(products.length);
       setProducts((prev) => [
         ...prev,
@@ -86,6 +88,7 @@ export default function HomeScreen() {
 
   // すべてクリア
   const handleClear = useCallback(() => {
+    triggerLightHaptic();
     const validProducts = products.filter((p) => p.price > 0 && p.weight > 0);
     if (validProducts.length > 0) {
       const cheapest = validProducts.reduce((prev, current) =>
