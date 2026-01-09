@@ -12,7 +12,7 @@ const schemeFromBundleId = `manus${timestamp}`;
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "グラム単価比較アプリ",
+  appName: "グラム単価比較",
   appSlug: "gram-price-compare-app",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
@@ -25,7 +25,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.0.0",
+  version: "0.1.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -37,7 +37,7 @@ const config: ExpoConfig = {
   },
   android: {
     adaptiveIcon: {
-      backgroundColor: "#E6F4FE",
+      backgroundColor: "#F9FAFB",
       foregroundImage: "./assets/images/android-icon-foreground.png",
       backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",
@@ -86,9 +86,9 @@ const config: ExpoConfig = {
         image: "./assets/images/splash-icon.png",
         imageWidth: 200,
         resizeMode: "contain",
-        backgroundColor: "#ffffff",
+        backgroundColor: "#F9FAFB",
         dark: {
-          backgroundColor: "#000000",
+          backgroundColor: "#1F2937",
         },
       },
     ],
