@@ -1,8 +1,8 @@
-import { ScrollView, View, Text, Pressable, Alert } from "react-native";
-import { useState, useCallback } from "react";
-import { useRouter } from "expo-router";
+import { ScrollView, View, Text, Pressable, FlatList, TextInput } from "react-native";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
-import { ProductCard } from "@/components/product-card";
+import { ProductCardHorizontal } from "@/components/product-card-horizontal";
 import {
   calculatePricePerGram,
   compareProducts,
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useColors } from "@/hooks/use-colors";
 import { useHistory } from "@/lib/history-context";
 import { triggerLightHaptic } from "@/lib/haptics";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const INITIAL_PRODUCTS: Product[] = [
   {
@@ -34,8 +35,33 @@ const INITIAL_PRODUCTS: Product[] = [
 export default function HomeScreen() {
   const colors = useColors();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { saveEntry } = useHistory();
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [editingLabel, setEditingLabel] = useState<string | null>(null);
+
+  // 履歴から復元
+  useEffect(() => {
+    if (params.restore) {
+      try {
+        const entry = JSON.parse(params.restore as string);
+        const restoredProducts = entry.products.map((p: any, index: number) => ({
+          id: generateProductId(index),
+          label: p.label,
+          price: p.price,
+          weight: p.weight,
+          pricePerGram: p.pricePerGram,
+        }));
+        setProducts(restoredProducts);
+      } catch (error) {
+        console.error("Failed to restore history:", error);
+      }
+    }
+  }, [params.restore]);
+
+  // 入力フィールドのRef
+  const priceInputRefs = useRef<{ [key: string]: TextInput | null }>({});
+  const weightInputRefs = useRef<{ [key: string]: TextInput | null }>({});
 
   // 商品の価格を更新
   const handlePriceChange = useCallback((index: number, price: number) => {
@@ -63,6 +89,15 @@ export default function HomeScreen() {
     });
   }, []);
 
+  // 商品名を更新
+  const handleLabelChange = useCallback((index: number, label: string) => {
+    setProducts((prev) => {
+      const updated = [...prev];
+      updated[index].label = label;
+      return updated;
+    });
+  }, []);
+
   // 商品を追加
   const handleAddProduct = useCallback(() => {
     if (products.length < 4) {
@@ -83,6 +118,7 @@ export default function HomeScreen() {
 
   // 商品を削除
   const handleRemoveProduct = useCallback((index: number) => {
+    triggerLightHaptic();
     setProducts((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
@@ -107,88 +143,122 @@ export default function HomeScreen() {
       });
     }
     setProducts(INITIAL_PRODUCTS);
+    setEditingLabel(null);
   }, [products, saveEntry]);
 
   // 最安商品を特定
   const comparison = compareProducts(products);
 
   return (
-    <ScreenContainer className="bg-background">
+    <ScreenContainer className="bg-background flex-col">
       {/* ヘッダー */}
-      <View className="flex-row items-center justify-between px-4 py-4 border-b border-border">
-        <Text className="text-2xl font-bold text-foreground">
+      <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
+        <Text className="text-xl font-bold text-foreground">
           グラム単価比較
         </Text>
         <Pressable
-          onPress={() => router.push("../history" as any)}
+          onPress={() => {
+            triggerLightHaptic();
+            router.push("../history" as any);
+          }}
           className="px-3 py-2 rounded-lg"
           style={({ pressed }) => ({
             opacity: pressed ? 0.7 : 1,
           })}
         >
-          <Text className="text-primary font-semibold">履歴</Text>
+          <MaterialIcons
+            name="history"
+            size={24}
+            color={colors.primary}
+          />
         </Pressable>
+      </View>
+
+      {/* アクションバー（上部） */}
+      <View className="flex-row gap-2 px-4 py-3 border-b border-border">
+        {/* クリアボタン */}
+        <Pressable
+          onPress={handleClear}
+          className="flex-1 py-2 px-3 rounded-lg flex-row items-center justify-center gap-1"
+          style={({ pressed }) => ({
+            backgroundColor: colors.primary,
+            opacity: pressed ? 0.8 : 1,
+          })}
+        >
+          <MaterialIcons
+            name="clear"
+            size={18}
+            color="white"
+          />
+          <Text className="text-white font-semibold text-sm">
+            クリア
+          </Text>
+        </Pressable>
+
+        {/* 商品追加ボタン */}
+        {products.length < 4 && (
+          <Pressable
+            onPress={handleAddProduct}
+            className="flex-1 py-2 px-3 rounded-lg flex-row items-center justify-center gap-1 border"
+            style={({ pressed }) => ({
+              borderColor: colors.primary,
+              backgroundColor: pressed ? `${colors.primary}10` : "transparent",
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <MaterialIcons
+              name="add"
+              size={18}
+              color={colors.primary}
+            />
+            <Text className="text-primary font-semibold text-sm">
+              追加
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       {/* コンテンツ */}
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
-        className="px-4 py-4"
+        className="flex-1 px-4 py-4"
         showsVerticalScrollIndicator={false}
       >
-        {/* 商品カード */}
-        <View className="gap-2">
-          {products.map((product, index) => (
-            <ProductCard
-              key={product.id}
-              label={product.label}
-              price={product.price}
-              weight={product.weight}
-              pricePerGram={product.pricePerGram}
-              isCheapest={product.id === comparison.cheapestId}
+        {/* 商品カード横並びスクロール */}
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => (
+            <ProductCardHorizontal
+              label={item.label}
+              price={item.price}
+              weight={item.weight}
+              pricePerGram={item.pricePerGram}
+              isCheapest={item.id === comparison.cheapestId}
+              isEditing={editingLabel === item.id}
               onPriceChange={(price) => handlePriceChange(index, price)}
               onWeightChange={(weight) => handleWeightChange(index, weight)}
+              onLabelChange={(label) => {
+                handleLabelChange(index, label);
+              }}
               onRemove={() => handleRemoveProduct(index)}
+              onEditLabel={() => {
+                setEditingLabel(
+                  editingLabel === item.id ? null : item.id
+                );
+              }}
               showRemove={products.length > 2}
+              priceInputRef={priceInputRefs.current[item.id] as any}
+              weightInputRef={weightInputRefs.current[item.id] as any}
             />
-          ))}
-        </View>
-
-        {/* スペーサー */}
-        <View className="flex-1" />
-
-        {/* アクションボタン */}
-        <View className="gap-3 mt-6">
-          {/* 商品追加ボタン */}
-          {products.length < 4 && (
-            <Pressable
-              onPress={handleAddProduct}
-              className="py-3 px-4 rounded-lg border border-primary items-center"
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.8 : 1,
-                backgroundColor: pressed ? `${colors.primary}10` : "transparent",
-              })}
-            >
-              <Text className="text-primary font-semibold">
-                + 商品を追加
-              </Text>
-            </Pressable>
           )}
-
-          {/* クリアボタン */}
-          <Pressable
-            onPress={handleClear}
-            className="py-3 px-4 rounded-lg items-center"
-            style={({ pressed }) => ({
-              backgroundColor: colors.primary,
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <Text className="text-background font-semibold">
-              クリア
-            </Text>
-          </Pressable>
-        </View>
+          horizontal
+          scrollEnabled
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 12 }}
+          snapToInterval={280}
+          decelerationRate="fast"
+        />
       </ScrollView>
     </ScreenContainer>
   );
