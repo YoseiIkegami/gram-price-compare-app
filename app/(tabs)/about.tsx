@@ -6,9 +6,9 @@ export default function AboutScreen() {
   const colors = useColors();
 
   const openLink = (url: string) => {
-    Linking.openURL(url).catch((err) =>
-      console.error("Failed to open URL:", err)
-    );
+    Linking.openURL(url).catch(() => {
+      // URLを開く際のエラーは無視
+    });
   };
 
   return (
@@ -22,7 +22,7 @@ export default function AboutScreen() {
         <View className="items-center py-8">
           <Text className="text-4xl mb-4">💰</Text>
           <Text className="text-2xl font-bold text-foreground">
-            グラム単価比較
+            どち得？ グラム単価比較アプリ
           </Text>
           <Text className="text-sm text-muted mt-2">
             v1.0.0
@@ -116,13 +116,7 @@ export default function AboutScreen() {
             <View className="flex-row gap-2">
               <Text className="text-foreground">✓</Text>
               <Text className="flex-1 text-foreground">
-                計算結果の履歴保存
-              </Text>
-            </View>
-            <View className="flex-row gap-2">
-              <Text className="text-foreground">✓</Text>
-              <Text className="flex-1 text-foreground">
-                ダークモード対応
+                リアルタイム計算
               </Text>
             </View>
             <View className="flex-row gap-2">
@@ -164,10 +158,10 @@ export default function AboutScreen() {
         {/* フッター */}
         <View className="items-center py-4 border-t border-border">
           <Text className="text-xs text-muted">
-            © 2024 グラム単価比較アプリ
+            © {new Date().getFullYear()} どち得？ グラム単価比較アプリ
           </Text>
           <Text className="text-xs text-muted mt-2">
-            Made with ❤️ for smart shopping
+            Made by YoseiIkegami
           </Text>
         </View>
       </ScrollView>

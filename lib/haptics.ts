@@ -1,6 +1,8 @@
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
 
+const IS_DEV = __DEV__;
+
 /**
  * 軽いハプティクスフィードバック（ボタンタップ用）
  */
@@ -9,7 +11,9 @@ export async function triggerLightHaptic() {
   try {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   } catch (error) {
-    console.warn("Haptic feedback not available:", error);
+    if (IS_DEV) {
+      console.warn("Haptic feedback not available:", error);
+    }
   }
 }
 
@@ -21,7 +25,9 @@ export async function triggerMediumHaptic() {
   try {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   } catch (error) {
-    console.warn("Haptic feedback not available:", error);
+    if (IS_DEV) {
+      console.warn("Haptic feedback not available:", error);
+    }
   }
 }
 
@@ -35,7 +41,9 @@ export async function triggerSuccessHaptic() {
       Haptics.NotificationFeedbackType.Success
     );
   } catch (error) {
-    console.warn("Haptic feedback not available:", error);
+    if (IS_DEV) {
+      console.warn("Haptic feedback not available:", error);
+    }
   }
 }
 
@@ -47,6 +55,8 @@ export async function triggerErrorHaptic() {
   try {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
   } catch (error) {
-    console.warn("Haptic feedback not available:", error);
+    if (IS_DEV) {
+      console.warn("Haptic feedback not available:", error);
+    }
   }
 }

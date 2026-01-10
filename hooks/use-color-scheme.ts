@@ -1,5 +1,6 @@
-import { useThemeContext } from "@/lib/theme-provider";
-
+/**
+ * 常にライトモードを返します（ダークモード対応なし）
+ */
 export function useColorScheme() {
-  return useThemeContext().colorScheme;
+  return "light" as const;
 }

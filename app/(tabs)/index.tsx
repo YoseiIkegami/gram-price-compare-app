@@ -1,67 +1,62 @@
-import { ScrollView, View, Text, Pressable, FlatList, TextInput } from "react-native";
-import { useState, useCallback, useRef, useEffect } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { ScrollView, View, Text, Pressable, TextInput, Platform } from "react-native";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import type React from "react";
 import { ScreenContainer } from "@/components/screen-container";
-import { ProductCardHorizontal } from "@/components/product-card-horizontal";
+import { ProductCard } from "@/components/product-card";
 import {
   calculatePricePerGram,
   compareProducts,
-  generateProductId,
   type Product,
 } from "@/lib/calculator";
-import { cn } from "@/lib/utils";
 import { useColors } from "@/hooks/use-colors";
-import { useHistory } from "@/lib/history-context";
 import { triggerLightHaptic } from "@/lib/haptics";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const INITIAL_PRODUCTS: Product[] = [
   {
-    id: "A",
-    label: "A",
+    label: "商品1",
+    index: 1,
     price: 0,
     weight: 0,
     pricePerGram: 0,
   },
   {
-    id: "B",
-    label: "B",
+    label: "商品2",
+    index: 2,
     price: 0,
     weight: 0,
     pricePerGram: 0,
   },
 ];
 
+// 価格比較の許容誤差（円/g）
+const PRICE_COMPARISON_TOLERANCE = 0.01;
+
+
+// 入力フォーカスの遅延時間（ms）
+const INPUT_FOCUS_DELAY_MS = 100;
+
 export default function HomeScreen() {
   const colors = useColors();
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const { saveEntry } = useHistory();
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [editingLabel, setEditingLabel] = useState<string | null>(null);
-
-  // 履歴から復元
-  useEffect(() => {
-    if (params.restore) {
-      try {
-        const entry = JSON.parse(params.restore as string);
-        const restoredProducts = entry.products.map((p: any, index: number) => ({
-          id: generateProductId(index),
-          label: p.label,
-          price: p.price,
-          weight: p.weight,
-          pricePerGram: p.pricePerGram,
-        }));
-        setProducts(restoredProducts);
-      } catch (error) {
-        console.error("Failed to restore history:", error);
-      }
-    }
-  }, [params.restore]);
+  const [editingLabel, setEditingLabel] = useState<number | null>(null);
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
 
   // 入力フィールドのRef
-  const priceInputRefs = useRef<{ [key: string]: TextInput | null }>({});
-  const weightInputRefs = useRef<{ [key: string]: TextInput | null }>({});
+  const priceInputRefs = useRef<{ [key: number]: React.RefObject<TextInput | null> }>({});
+  const weightInputRefs = useRef<{ [key: number]: React.RefObject<TextInput | null> }>({});
+  
+  // 商品ごとのrefを初期化
+  useEffect(() => {
+    products.forEach((product) => {
+      if (!priceInputRefs.current[product.index]) {
+        priceInputRefs.current[product.index] = { current: null } as React.RefObject<TextInput | null>;
+      }
+      if (!weightInputRefs.current[product.index]) {
+        weightInputRefs.current[product.index] = { current: null } as React.RefObject<TextInput | null>;
+      }
+    });
+  }, [products]);
 
   // 商品の価格を更新
   const handlePriceChange = useCallback((index: number, price: number) => {
@@ -100,197 +95,281 @@ export default function HomeScreen() {
 
   // 商品を追加
   const handleAddProduct = useCallback(() => {
-    if (products.length < 4) {
-      triggerLightHaptic();
-      const newId = generateProductId(products.length);
-      setProducts((prev) => [
-        ...prev,
-        {
-          id: newId,
-          label: newId,
-          price: 0,
-          weight: 0,
-          pricePerGram: 0,
-        },
-      ]);
+    // 連打防止: 処理中の場合は処理しない
+    if (isAddingProduct) {
+      return;
     }
-  }, [products.length]);
+    
+    setIsAddingProduct(true);
+    triggerLightHaptic();
+    
+    setProducts((prev) => {
+      // 上限チェック（コールバック内で最新の状態を確認）
+      if (prev.length >= 4) {
+        // 上限に達している場合はフラグをリセットして終了
+        setTimeout(() => setIsAddingProduct(false), 0);
+        return prev;
+      }
+      
+      // 現在の商品の最大indexを取得して＋１
+      const maxIndex = prev.reduce((max, product) => 
+        product.index > max ? product.index : max, 0
+      );
+      const nextIndex = maxIndex + 1;
+      
+      const newProduct = {
+        label: `商品${nextIndex}`,
+        index: nextIndex,
+        price: 0,
+        weight: 0,
+        pricePerGram: 0,
+      };
+      const updated = [...prev, newProduct];
+      
+      // フォーカス処理を非同期で実行
+      setTimeout(() => {
+        try {
+          const inputRef = priceInputRefs.current[nextIndex];
+          if (inputRef?.current) {
+            inputRef.current.focus();
+          }
+        } catch {
+          // フォーカスエラーは無視
+        } finally {
+          // 処理完了後にフラグをリセット
+          setIsAddingProduct(false);
+        }
+      }, INPUT_FOCUS_DELAY_MS);
+      
+      return updated;
+    });
+  }, [isAddingProduct]);
 
   // 商品を削除
   const handleRemoveProduct = useCallback((index: number) => {
     triggerLightHaptic();
-    setProducts((prev) => prev.filter((_, i) => i !== index));
+    
+    setProducts((prev) => {
+      const removed = prev.filter((_, i) => i !== index);
+      const removedIndex = prev[index]?.index;
+      
+      // 削除された商品のRefをクリーンアップ
+      if (removedIndex !== undefined) {
+        delete priceInputRefs.current[removedIndex];
+        delete weightInputRefs.current[removedIndex];
+      }
+      
+      return removed;
+    });
   }, []);
 
   // すべてクリア
   const handleClear = useCallback(() => {
     triggerLightHaptic();
-    const validProducts = products.filter((p) => p.price > 0 && p.weight > 0);
-    if (validProducts.length > 0) {
-      const cheapest = validProducts.reduce((prev, current) =>
-        current.pricePerGram < prev.pricePerGram ? current : prev
-      );
-
-      saveEntry({
-        title: "",
-        products: validProducts.map((p) => ({
-          label: p.label,
-          price: p.price,
-          weight: p.weight,
-          pricePerGram: p.pricePerGram,
-        })),
-        cheapestLabel: cheapest.label,
+    
+    // 既存の商品をすべて削除し、Refもクリーンアップ
+    setProducts((prev) => {
+      // 既存の商品のRefをすべてクリーンアップ
+      prev.forEach((product) => {
+        delete priceInputRefs.current[product.index];
+        delete weightInputRefs.current[product.index];
       });
-    }
-    setProducts(INITIAL_PRODUCTS);
+      
+      // 商品1,2を初期化（新しい配列として作成してReactに変更を確実に検出させる）
+      const resetProducts: Product[] = [
+        {
+          label: "商品1",
+          index: 1,
+          price: 0,
+          weight: 0,
+          pricePerGram: 0,
+        },
+        {
+          label: "商品2",
+          index: 2,
+          price: 0,
+          weight: 0,
+          pricePerGram: 0,
+        },
+      ];
+      
+      return resetProducts;
+    });
     setEditingLabel(null);
-  }, [products, saveEntry]);
+  }, []);
 
-  // 最安商品を特定
-  const comparison = compareProducts(products);
+  // 最安商品を特定（メモ化でパフォーマンス最適化）
+  const comparison = useMemo(() => compareProducts(products, PRICE_COMPARISON_TOLERANCE), [products]);
 
   return (
     <ScreenContainer className="bg-background flex-col p-0">
-      {/* ヘッダー */}
-      <View className="flex-row items-center justify-between px-3 py-2.5 border-b border-border">
-        <Text className="text-lg font-bold text-foreground">
-          グラム単価比較
-        </Text>
-        <Pressable
-          onPress={() => {
-            triggerLightHaptic();
-            router.push("../history" as any);
-          }}
-          className="px-2 py-1.5 rounded-lg"
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.7 : 1,
-          })}
-        >
-          <MaterialIcons
-            name="history"
-            size={20}
-            color={colors.primary}
-          />
-        </Pressable>
-      </View>
-
-      {/* アクションバー（上部） */}
-      <View className="flex-row gap-1.5 px-3 py-2 border-b border-border">
-        {/* クリアボタン */}
+      {/* ヘッダー: クリア・追加ボタン */}
+      <View
+        className="flex-row items-center justify-between"
+        style={{
+          backgroundColor: colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          paddingHorizontal: 24,
+          paddingVertical: 16,
+        }}
+      >
+        {/* 左側: クリアボタン */}
         <Pressable
           onPress={handleClear}
-          className="flex-1 py-1.5 px-2 rounded-lg flex-row items-center justify-center gap-1"
           style={({ pressed }) => ({
-            backgroundColor: colors.primary,
-            opacity: pressed ? 0.8 : 1,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            backgroundColor: `${colors.error}15`,
+            borderWidth: 1,
+            borderColor: colors.error,
+            borderRadius: 8,
+            opacity: pressed ? 0.7 : 1,
+            marginRight: 8,
           })}
         >
           <MaterialIcons
             name="clear"
             size={16}
-            color="white"
+            color={colors.error}
+            style={{ marginRight: 6 }}
           />
-          <Text className="text-white font-semibold text-xs">
+          <Text
+            style={{
+              color: colors.error,
+              fontSize: 14,
+              fontWeight: "600",
+            }}
+          >
             クリア
           </Text>
         </Pressable>
 
-        {/* 商品追加ボタン */}
+        {/* 右側: 追加ボタン */}
         {products.length < 4 && (
           <Pressable
             onPress={handleAddProduct}
-            className="flex-1 py-1.5 px-2 rounded-lg flex-row items-center justify-center gap-1 border"
+            disabled={isAddingProduct}
             style={({ pressed }) => ({
-              borderColor: colors.primary,
-              backgroundColor: pressed ? `${colors.primary}10` : "transparent",
-              opacity: pressed ? 0.8 : 1,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: 10,
+              paddingHorizontal: 16,
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 8,
+              opacity: isAddingProduct || pressed ? 0.5 : 1,
+              marginLeft: 8,
             })}
           >
             <MaterialIcons
               name="add"
               size={16}
               color={colors.primary}
+              style={{ marginRight: 6 }}
             />
-            <Text className="text-primary font-semibold text-xs">
+            <Text
+              style={{
+                color: colors.primary,
+                fontSize: 14,
+                fontWeight: "600",
+              }}
+            >
               追加
             </Text>
           </Pressable>
         )}
       </View>
 
-      {/* コンテンツ */}
+      {/* コンテンツ - グラデーション背景 */}
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
-        className="flex-1 px-3 py-3"
+        className="flex-1"
         showsVerticalScrollIndicator={false}
+        style={{
+          backgroundColor: colors.background,
+        }}
       >
-        {/* 商品カード横並びスクロール */}
-        <View className="mb-4">
-          <FlatList
-            data={products}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item, index }) => (
-              <ProductCardHorizontal
-                label={item.label}
-                price={item.price}
-                weight={item.weight}
-                pricePerGram={item.pricePerGram}
-                isCheapest={item.id === comparison.cheapestId}
-                isEditing={editingLabel === item.id}
-                onPriceChange={(price) => handlePriceChange(index, price)}
-                onWeightChange={(weight) => handleWeightChange(index, weight)}
-                onLabelChange={(label) => {
-                  handleLabelChange(index, label);
-                }}
-                onRemove={() => handleRemoveProduct(index)}
-                onEditLabel={() => {
-                  setEditingLabel(
-                    editingLabel === item.id ? null : item.id
-                  );
-                }}
-                showRemove={products.length > 2}
-                priceInputRef={priceInputRefs.current[item.id] as any}
-                weightInputRef={weightInputRefs.current[item.id] as any}
-              />
-            )}
-            horizontal
-            scrollEnabled
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 10 }}
-            snapToInterval={140}
-            decelerationRate="fast"
-            scrollEventThrottle={16}
-          />
-        </View>
-
-        {/* 比較結果サマリー */}
-        {comparison.cheapestId && (
-          <View
-            className="rounded-lg p-3 mb-4"
-            style={{
-              backgroundColor: `${colors.primary}10`,
-              borderLeftWidth: 4,
-              borderLeftColor: colors.primary,
-            }}
-          >
-            <Text className="text-xs text-muted mb-1">最安商品</Text>
-            <View className="flex-row items-baseline gap-2">
-              <Text className="text-2xl font-bold text-primary">
-                {
-                  products.find((p) => p.id === comparison.cheapestId)?.label
-                }
-              </Text>
-              <Text className="text-lg font-semibold text-primary">
-                {
-                  products
-                    .find((p) => p.id === comparison.cheapestId)
-                    ?.pricePerGram.toFixed(2)
-                }
-              </Text>
-              <Text className="text-sm text-primary">円/g</Text>
-            </View>
+        <View className="px-6 py-6">
+          {/* 商品カードリスト */}
+          <View className="mb-4 gap-4">
+            {products.map((item, index) => (
+            <ProductCard
+              key={item.index}
+              label={item.label}
+              price={item.price}
+              weight={item.weight}
+              pricePerGram={item.pricePerGram}
+              isCheapest={comparison.cheapestIndexes.includes(item.index)}
+              isEditing={editingLabel === item.index}
+              onPriceChange={(price) => handlePriceChange(index, price)}
+              onWeightChange={(weight) => handleWeightChange(index, weight)}
+              onLabelChange={(label) => {
+                handleLabelChange(index, label);
+              }}
+              onRemove={() => handleRemoveProduct(index)}
+              onEditLabel={() => {
+                setEditingLabel(
+                  editingLabel === item.index ? null : item.index
+                );
+              }}
+              showRemove={products.length > 2}
+              priceInputRef={priceInputRefs.current[item.index]}
+              weightInputRef={weightInputRefs.current[item.index]}
+            />
+            ))}
           </View>
-        )}
+
+          {/* 最安商品サマリー */}
+          {comparison.cheapestIndexes.length > 0 && (() => {
+            const cheapestProducts = products.filter((p) =>
+              comparison.cheapestIndexes.includes(p.index)
+            );
+            const cheapestPricePerGram = cheapestProducts[0]?.pricePerGram || 0;
+            const cheapestLabels = cheapestProducts.map((p) => p.label).join("・");
+
+            const summaryShadowStyle = Platform.OS === "web"
+              ? { boxShadow: `0 4px 8px ${colors.primary}26` }
+              : {
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 8,
+                  elevation: 4,
+                };
+
+            return (
+              <View
+                className="rounded-2xl p-5 mb-4"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderWidth: 2,
+                  borderColor: colors.primary,
+                  ...summaryShadowStyle,
+                }}
+              >
+                <View className="flex-row items-center gap-2 mb-2">
+                  <Text className="text-2xl">👑</Text>
+                  <Text className="text-sm font-semibold text-muted">最安商品</Text>
+                </View>
+                <View className="flex-row items-baseline gap-2 flex-wrap">
+                  <Text className="text-3xl font-bold text-primary">
+                    {cheapestLabels}
+                  </Text>
+                  <Text className="text-xl font-semibold text-primary">
+                    {cheapestPricePerGram.toFixed(2)}
+                  </Text>
+                  <Text className="text-base text-primary">円/g</Text>
+                </View>
+              </View>
+            );
+          })()}
+        </View>
       </ScrollView>
     </ScreenContainer>
   );

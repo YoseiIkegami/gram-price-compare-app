@@ -1,6 +1,9 @@
-import { View, TextInput, Pressable, Text } from "react-native";
-import { cn } from "@/lib/utils";
+import { View, TextInput, Pressable, Text, Platform } from "react-native";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { cn, normalizeNumericInput, normalizeNumericInputText } from "@/lib/utils";
 import { useColors } from "@/hooks/use-colors";
+import { triggerLightHaptic } from "@/lib/haptics";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export interface ProductCardProps {
   label: string;
@@ -8,10 +11,15 @@ export interface ProductCardProps {
   weight: number;
   pricePerGram: number;
   isCheapest: boolean;
+  isEditing: boolean;
   onPriceChange: (price: number) => void;
   onWeightChange: (weight: number) => void;
+  onLabelChange?: (label: string) => void;
   onRemove?: () => void;
+  onEditLabel?: () => void;
   showRemove?: boolean;
+  priceInputRef?: React.RefObject<TextInput | null>;
+  weightInputRef?: React.RefObject<TextInput | null>;
 }
 
 export function ProductCard({
@@ -20,85 +28,373 @@ export function ProductCard({
   weight,
   pricePerGram,
   isCheapest,
+  isEditing,
   onPriceChange,
   onWeightChange,
+  onLabelChange,
   onRemove,
+  onEditLabel,
   showRemove = false,
+  priceInputRef,
+  weightInputRef,
 }: ProductCardProps) {
   const colors = useColors();
+  const labelInputRef = useRef<TextInput>(null);
+  
+  // 入力テキストを文字列として保持（小数点入力中も保持）
+  const [priceText, setPriceText] = useState<string>(price === 0 ? "" : price.toString());
+  const [weightText, setWeightText] = useState<string>(weight === 0 ? "" : weight.toString());
+  
+  // フォーカス状態を管理
+  const [isPriceFocused, setIsPriceFocused] = useState(false);
+  const [isWeightFocused, setIsWeightFocused] = useState(false);
+  
+  // requestAnimationFrame IDを追跡するrefs
+  const priceRafIdRef = useRef<number | null>(null);
+  const weightRafIdRef = useRef<number | null>(null);
+  
+  // price/weightが外部から変更された場合（クリア時など）にテキストを更新
+  useEffect(() => {
+    if (price === 0) {
+      setPriceText("");
+    } else {
+      const currentPrice = parseFloat(priceText) || 0;
+      // 外部から変更された場合のみ更新（入力中の場合は更新しない）
+      // 許容誤差を考慮して比較
+      if (Math.abs(currentPrice - price) > 0.0001) {
+        setPriceText(price.toString());
+      }
+    }
+    // priceTextは依存配列に含めない（無限ループを防ぐ）
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price]);
+  
+  useEffect(() => {
+    if (weight === 0) {
+      setWeightText("");
+    } else {
+      const currentWeight = parseFloat(weightText) || 0;
+      // 外部から変更された場合のみ更新（入力中の場合は更新しない）
+      // 許容誤差を考慮して比較
+      if (Math.abs(currentWeight - weight) > 0.0001) {
+        setWeightText(weight.toString());
+      }
+    }
+    // weightTextは依存配列に含めない（無限ループを防ぐ）
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weight]);
+  
+  const handlePriceSubmit = () => {
+    if (weightInputRef?.current) {
+      weightInputRef.current.focus();
+    }
+  };
+  
+  const handleWeightSubmit = () => {
+    if (weightInputRef?.current) {
+      weightInputRef.current.blur();
+    }
+  };
+  
+  const handlePriceTextChange = (text: string) => {
+    const normalizedText = normalizeNumericInputText(text);
+    setPriceText(normalizedText);
+    const num = normalizeNumericInput(normalizedText);
+    onPriceChange(num);
+  };
+  
+  const handleWeightTextChange = (text: string) => {
+    const normalizedText = normalizeNumericInputText(text);
+    setWeightText(normalizedText);
+    const num = normalizeNumericInput(normalizedText);
+    onWeightChange(num);
+  };
+
+  // requestAnimationFrameのクリーンアップ
+  useEffect(() => {
+    return () => {
+      if (priceRafIdRef.current !== null) {
+        cancelAnimationFrame(priceRafIdRef.current);
+        priceRafIdRef.current = null;
+      }
+      if (weightRafIdRef.current !== null) {
+        cancelAnimationFrame(weightRafIdRef.current);
+        weightRafIdRef.current = null;
+      }
+    };
+  }, []);
+
+  // フォーカスハンドラーを最適化（useCallbackでメモ化）
+  const handlePriceFocus = useCallback(() => {
+    setIsPriceFocused(true);
+  }, []);
+
+  const handlePriceBlur = useCallback(() => {
+    setIsPriceFocused(false);
+  }, []);
+
+  const handleWeightFocus = useCallback(() => {
+    setIsWeightFocused(true);
+  }, []);
+
+  const handleWeightBlur = useCallback(() => {
+    setIsWeightFocused(false);
+  }, []);
+
+  // タップ時にrequestAnimationFrameでフォーカスをスケジュール
+  // フォーカス状態はTextInputのonFocus/onBlurハンドラーで管理
+  const handlePriceContainerPress = useCallback(() => {
+    // 既存のRAFをキャンセル
+    if (priceRafIdRef.current !== null) {
+      cancelAnimationFrame(priceRafIdRef.current);
+    }
+    // 次フレームでTextInputにフォーカスを当てる
+    priceRafIdRef.current = requestAnimationFrame(() => {
+      priceInputRef?.current?.focus();
+      priceRafIdRef.current = null;
+    });
+  }, [priceInputRef]);
+
+  const handleWeightContainerPress = useCallback(() => {
+    // 既存のRAFをキャンセル
+    if (weightRafIdRef.current !== null) {
+      cancelAnimationFrame(weightRafIdRef.current);
+    }
+    // 次フレームでTextInputにフォーカスを当てる
+    weightRafIdRef.current = requestAnimationFrame(() => {
+      weightInputRef?.current?.focus();
+      weightRafIdRef.current = null;
+    });
+  }, [weightInputRef]);
+
+  // スタイル定数を定義
+  const cardBackgroundColor = isCheapest ? `${colors.primary}15` : colors.surface;
+  const cardBorderColor = isCheapest ? colors.primary : colors.border;
+  const cardClassName = cn(
+    "rounded-2xl p-4 border-2",
+    isCheapest ? "bg-primary/10 border-primary" : "bg-surface border-border"
+  );
+
+  // シャドウスタイルを定義
+  const shadowStyle = Platform.OS === "web"
+    ? {
+        boxShadow: isCheapest
+          ? `0 2px 6px ${colors.primary}33`
+          : `0 2px 6px ${colors.border}1A`,
+      }
+    : {
+        shadowColor: isCheapest ? colors.primary : colors.border,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: isCheapest ? 0.2 : 0.1,
+        shadowRadius: 6,
+        elevation: isCheapest ? 4 : 2,
+      };
+
+  // 入力フィールドのスタイル（メモ化で最適化）
+  const inputTextStyle = useMemo(
+    () => ({
+      flex: 1,
+      color: colors.foreground,
+      fontSize: 14,
+      fontWeight: "500" as const,
+      paddingVertical: 10,
+      paddingLeft: 12,
+      paddingRight: 8,
+    }),
+    [colors.foreground]
+  );
+
+  // Webでのフォーカス時のアウトラインを削除
+  const webInputStyle = useMemo(
+    () =>
+      Platform.OS === "web"
+        ? ({
+            outlineStyle: "none" as const,
+            outlineWidth: 0,
+            outlineColor: "transparent",
+          } as unknown as React.ComponentProps<typeof TextInput>["style"])
+        : {},
+    []
+  );
+
+  // 入力フィールドの行スタイル
+  const inputRowStyle = useMemo(
+    () => ({
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      flex: 1,
+    }),
+    []
+  );
+
+  // フォーカス状態に応じたスタイルを事前計算（メモ化）
+  const priceContainerStyle = useMemo(
+    () => ({
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      borderWidth: 2,
+      borderColor: isPriceFocused ? colors.primary : colors.border,
+      borderRadius: 12,
+      backgroundColor: colors.background,
+    }),
+    [isPriceFocused, colors.primary, colors.border, colors.background]
+  );
+
+  const weightContainerStyle = useMemo(
+    () => ({
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      borderWidth: 2,
+      borderColor: isWeightFocused ? colors.primary : colors.border,
+      borderRadius: 12,
+      backgroundColor: colors.background,
+    }),
+    [isWeightFocused, colors.primary, colors.border, colors.background]
+  );
+
+  const priceUnitStyle = useMemo(
+    () => ({
+      color: isPriceFocused ? colors.primary : colors.muted,
+      fontSize: 14,
+      fontWeight: "500" as const,
+      paddingRight: 12,
+    }),
+    [isPriceFocused, colors.primary, colors.muted]
+  );
+
+  const weightUnitStyle = useMemo(
+    () => ({
+      color: isWeightFocused ? colors.primary : colors.muted,
+      fontSize: 14,
+      fontWeight: "500" as const,
+      paddingRight: 12,
+    }),
+    [isWeightFocused, colors.primary, colors.muted]
+  );
 
   return (
     <View
-      className={cn(
-        "rounded-2xl p-4 border mb-4",
-        isCheapest ? "bg-primary/10 border-primary" : "bg-surface border-border"
-      )}
+      className={cardClassName}
       style={{
-        backgroundColor: isCheapest ? `${colors.primary}15` : colors.surface,
-        borderColor: isCheapest ? colors.primary : colors.border,
+        width: "100%",
+        backgroundColor: cardBackgroundColor,
+        borderColor: cardBorderColor,
+        ...shadowStyle,
       }}
     >
-      {/* ヘッダー */}
-      <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-lg font-semibold text-foreground">
-          商品 {label}
-        </Text>
-        {isCheapest && (
-          <Text className="text-xl">👑</Text>
+      {/* 商品名ヘッダー */}
+      <View className="flex-row items-center justify-between mb-3">
+        <View className="flex-row items-center gap-2 flex-1">
+          {isCheapest && (
+            <Text className="text-xl">👑</Text>
+          )}
+          {isEditing ? (
+            <TextInput
+              ref={labelInputRef}
+              value={label}
+              onChangeText={onLabelChange}
+              placeholder="名前"
+              placeholderTextColor={colors.muted}
+              className="text-sm font-semibold text-foreground px-2 py-1 border border-primary rounded flex-1"
+              style={{ color: colors.foreground, borderColor: colors.primary }}
+              maxLength={8}
+            />
+          ) : (
+            <>
+              <Text className="text-base font-semibold text-foreground">
+                {label}
+              </Text>
+              <Pressable
+                onPress={() => {
+                  triggerLightHaptic();
+                  onEditLabel?.();
+                  labelInputRef.current?.focus();
+                }}
+              >
+                <MaterialIcons
+                  name="edit"
+                  size={16}
+                  color={colors.muted}
+                />
+              </Pressable>
+            </>
+          )}
+        </View>
+
+        {showRemove && onRemove && (
+          <Pressable
+            onPress={() => {
+              // ハプティックはhandleRemoveProduct内で実行されるため、ここでは呼ばない
+              onRemove();
+            }}
+            className="p-1"
+          >
+            <MaterialIcons
+              name="delete-outline"
+              size={18}
+              color={colors.error}
+            />
+          </Pressable>
         )}
       </View>
 
-      {/* 入力フィールド */}
-      <View className="gap-3 mb-4">
-        {/* 価格入力 */}
-        <View>
-          <Text className="text-sm font-medium text-muted mb-1">
-            価格
-          </Text>
-          <View className="flex-row items-center border border-border rounded-lg px-3 py-2 bg-background">
+      {/* 入力フィールドセクション */}
+      <View className="gap-2">
+        {/* 金額入力フィールド */}
+        <Pressable
+          style={priceContainerStyle}
+          onPress={handlePriceContainerPress}
+        >
+          <View style={inputRowStyle}>
             <TextInput
-              className="flex-1 text-foreground text-base"
-              placeholder="0"
+              ref={priceInputRef}
+              placeholder="金額"
               placeholderTextColor={colors.muted}
               keyboardType="decimal-pad"
-              value={price === 0 ? "" : price.toString()}
-              onChangeText={(text) => {
-                const num = parseFloat(text) || 0;
-                onPriceChange(num);
-              }}
-              returnKeyType="done"
+              value={priceText}
+              onChangeText={handlePriceTextChange}
+              onFocus={handlePriceFocus}
+              onBlur={handlePriceBlur}
+              returnKeyType="next"
+              onSubmitEditing={handlePriceSubmit}
+              style={[inputTextStyle, webInputStyle]}
+              underlineColorAndroid="transparent"
+              selectionColor={colors.primary}
             />
-            <Text className="text-foreground ml-2">円</Text>
+            <Text style={priceUnitStyle}>円</Text>
           </View>
-        </View>
+        </Pressable>
 
-        {/* 内容量入力 */}
-        <View>
-          <Text className="text-sm font-medium text-muted mb-1">
-            内容量
-          </Text>
-          <View className="flex-row items-center border border-border rounded-lg px-3 py-2 bg-background">
+        {/* 内容量入力フィールド */}
+        <Pressable
+          style={weightContainerStyle}
+          onPress={handleWeightContainerPress}
+        >
+          <View style={inputRowStyle}>
             <TextInput
-              className="flex-1 text-foreground text-base"
-              placeholder="0"
+              ref={weightInputRef}
+              placeholder="内容量"
               placeholderTextColor={colors.muted}
               keyboardType="decimal-pad"
-              value={weight === 0 ? "" : weight.toString()}
-              onChangeText={(text) => {
-                const num = parseFloat(text) || 0;
-                onWeightChange(num);
-              }}
+              value={weightText}
+              onChangeText={handleWeightTextChange}
+              onFocus={handleWeightFocus}
+              onBlur={handleWeightBlur}
               returnKeyType="done"
+              onSubmitEditing={handleWeightSubmit}
+              style={[inputTextStyle, webInputStyle]}
+              underlineColorAndroid="transparent"
+              selectionColor={colors.primary}
             />
-            <Text className="text-foreground ml-2">g</Text>
+            <Text style={weightUnitStyle}>g</Text>
           </View>
-        </View>
+        </Pressable>
       </View>
 
-      {/* 計算結果 */}
-      <View className="border-t border-border pt-4">
-        <Text className="text-xs text-muted mb-1">1g単価</Text>
-        <View className="flex-row items-baseline justify-between">
+      {/* 計算結果セクション */}
+      <View className="border-t-2 border-border pt-3 mt-3">
+        <Text className="text-xs font-semibold text-muted mb-2">単価</Text>
+        <View className="flex-row items-baseline gap-1">
           <Text
             className={cn(
               "text-2xl font-bold",
@@ -113,21 +409,6 @@ export function ProductCard({
           <Text className="text-sm text-muted">円/g</Text>
         </View>
       </View>
-
-      {/* 削除ボタン */}
-      {showRemove && onRemove && (
-        <Pressable
-          onPress={onRemove}
-          className="mt-4 py-2 px-3 bg-error/10 rounded-lg"
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.7 : 1,
-          })}
-        >
-          <Text className="text-center text-error text-sm font-medium">
-            削除
-          </Text>
-        </Pressable>
-      )}
     </View>
   );
 }

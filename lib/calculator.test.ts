@@ -3,7 +3,6 @@ import {
   calculatePricePerGram,
   findCheapest,
   compareProducts,
-  generateProductId,
   type Product,
 } from "./calculator";
 
@@ -39,50 +38,50 @@ describe("Calculator", () => {
     it("最安商品を正しく特定すること", () => {
       const products: Product[] = [
         {
-          id: "A",
           label: "A",
+          index: 1,
           price: 100,
           weight: 500,
           pricePerGram: 0.2,
         },
         {
-          id: "B",
           label: "B",
+          index: 2,
           price: 200,
           weight: 500,
           pricePerGram: 0.4,
         },
       ];
       const result = findCheapest(products);
-      expect(result).toBe("A");
+      expect(result).toBe(1);
     });
 
     it("複数の最安商品がある場合は最初のものを返すこと", () => {
       const products: Product[] = [
         {
-          id: "A",
           label: "A",
+          index: 1,
           price: 100,
           weight: 500,
           pricePerGram: 0.2,
         },
         {
-          id: "B",
           label: "B",
+          index: 2,
           price: 100,
           weight: 500,
           pricePerGram: 0.2,
         },
       ];
       const result = findCheapest(products);
-      expect(result).toBe("A");
+      expect(result).toBe(1);
     });
 
     it("有効な商品がない場合はnullを返すこと", () => {
       const products: Product[] = [
         {
-          id: "A",
           label: "A",
+          index: 1,
           price: 0,
           weight: 0,
           pricePerGram: 0,
@@ -99,58 +98,73 @@ describe("Calculator", () => {
   });
 
   describe("compareProducts", () => {
-    it("比較結果に最安商品IDが含まれること", () => {
+    it("比較結果に最安商品のindexが含まれること", () => {
       const products: Product[] = [
         {
-          id: "A",
           label: "A",
+          index: 1,
           price: 100,
           weight: 500,
           pricePerGram: 0.2,
         },
         {
-          id: "B",
           label: "B",
+          index: 2,
           price: 200,
           weight: 500,
           pricePerGram: 0.4,
         },
       ];
       const result = compareProducts(products);
-      expect(result.cheapestId).toBe("A");
+      expect(result.cheapestIndex).toBe(1);
+      expect(result.cheapestIndexes).toEqual([1]);
       expect(result.products).toEqual(products);
     });
 
     it("有効な商品がない場合はnullを返すこと", () => {
       const products: Product[] = [
         {
-          id: "A",
           label: "A",
+          index: 1,
           price: 0,
           weight: 0,
           pricePerGram: 0,
         },
       ];
       const result = compareProducts(products);
-      expect(result.cheapestId).toBeNull();
-    });
-  });
-
-  describe("generateProductId", () => {
-    it("インデックス0でAを返すこと", () => {
-      expect(generateProductId(0)).toBe("A");
+      expect(result.cheapestIndex).toBeNull();
+      expect(result.cheapestIndexes).toEqual([]);
     });
 
-    it("インデックス1でBを返すこと", () => {
-      expect(generateProductId(1)).toBe("B");
-    });
-
-    it("インデックス2でCを返すこと", () => {
-      expect(generateProductId(2)).toBe("C");
-    });
-
-    it("インデックス3でDを返すこと", () => {
-      expect(generateProductId(3)).toBe("D");
+    it("複数の最安商品がある場合はすべてのindexを返すこと", () => {
+      const products: Product[] = [
+        {
+          label: "A",
+          index: 1,
+          price: 100,
+          weight: 500,
+          pricePerGram: 0.2,
+        },
+        {
+          label: "B",
+          index: 2,
+          price: 100,
+          weight: 500,
+          pricePerGram: 0.2,
+        },
+        {
+          label: "C",
+          index: 3,
+          price: 200,
+          weight: 500,
+          pricePerGram: 0.4,
+        },
+      ];
+      const result = compareProducts(products);
+      expect(result.cheapestIndex).toBe(1); // 最初の一つ
+      expect(result.cheapestIndexes).toContain(1);
+      expect(result.cheapestIndexes).toContain(2);
+      expect(result.cheapestIndexes.length).toBe(2);
     });
   });
 });

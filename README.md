@@ -11,8 +11,6 @@
 - 📊 **自動計算** - 価格と内容量を入力するだけでグラム単価を自動計算
 - 👑 **最安表示** - 最安商品を色とアイコンで視覚的に強調
 - 📱 **片手操作** - モバイル画面に最適化されたコンパクトなUI
-- 💾 **履歴保存** - 計算結果をローカルに保存して後で確認
-- 🌙 **ダークモード** - ライト/ダークモード自動切り替え
 
 ## 使い方
 
@@ -37,17 +35,12 @@
 - 各商品のグラム単価が自動計算されます
 - 最安商品は緑色で強調表示され、👑アイコンが表示されます
 
-**履歴の保存と復元**:
-- 「クリア」ボタンで計算を終了すると、自動的に履歴に保存されます
-- 画面上部の履歴アイコンをタップして、過去の計算結果を確認できます
-- 履歴をタップすると、その計算結果を復元できます
-
 ## 技術スタック
 
 - **フレームワーク**: React Native + Expo
 - **言語**: TypeScript
 - **スタイリング**: TailwindCSS (NativeWind)
-- **状態管理**: React Context + AsyncStorage
+- **状態管理**: React Hooks (useState)
 - **テスト**: Vitest
 - **アイコン**: Material Icons + Expo Symbols
 
@@ -60,25 +53,25 @@ gram-price-compare-app/
 │   │   ├── index.tsx           # 計算画面（メイン）
 │   │   ├── about.tsx           # About画面
 │   │   └── _layout.tsx         # タブナビゲーション
-│   ├── history.tsx             # 履歴画面
-│   ├── _layout.tsx             # ルートレイアウト
-│   └── oauth/                  # OAuth認証（テンプレート）
+│   └── _layout.tsx             # ルートレイアウト
 ├── components/
 │   ├── screen-container.tsx    # SafeArea対応コンテナ
-│   ├── product-card-horizontal.tsx  # 商品カード（横並び）
+│   ├── product-card.tsx        # 商品カード
+│   ├── haptic-tab.tsx          # ハプティクスタブ
 │   └── ui/
 │       └── icon-symbol.tsx     # アイコンマッピング
 ├── lib/
 │   ├── calculator.ts           # 計算ロジック
 │   ├── calculator.test.ts      # ユニットテスト
-│   ├── history-context.tsx     # 履歴管理Context
 │   ├── haptics.ts              # ハプティクスフィードバック
-│   └── utils.ts                # ユーティリティ関数
+│   ├── utils.ts                # ユーティリティ関数
+│   └── theme-provider.tsx      # テーマプロバイダー
 ├── hooks/
 │   ├── use-colors.ts           # テーマカラーフック
 │   ├── use-color-scheme.ts     # ダークモード検出
-│   └── use-auth.ts             # 認証フック
+│   └── use-color-scheme.web.ts # Web用ダークモード検出
 ├── constants/
+│   ├── const.ts                # 定数定義
 │   └── theme.ts                # テーマ定義
 ├── assets/images/              # アプリアイコン・スプラッシュ
 ├── app.config.ts               # Expo設定
@@ -110,8 +103,14 @@ pnpm format
 
 ### ブラウザでプレビュー
 
-開発サーバー起動後、以下のURLでブラウザプレビューが利用可能です:
-- **Metro**: https://8081-i5o0eknaokvxpojkbgsgm-40161be1.sg1.manus.computer
+開発サーバー起動後、ターミナルに表示されるURLにアクセスするか、自動的に開かれるブラウザでアプリを確認できます。
+
+```bash
+# 開発サーバー起動後、以下のようなURLが表示されます:
+# Web: http://localhost:8081
+```
+
+ブラウザで直接アクセスする場合は、ターミナルで`w`キーを押すか、表示されたURLをクリックしてください。
 
 ### モバイルデバイスでテスト
 

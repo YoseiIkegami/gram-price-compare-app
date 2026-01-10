@@ -1,67 +1,74 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Appearance, View, useColorScheme as useSystemColorScheme } from "react-native";
-import { colorScheme as nativewindColorScheme, vars } from "nativewind";
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo } from "react";
+import { Appearance, View } from "react-native";
+import { vars } from "nativewind";
 
-import { SchemeColors, type ColorScheme } from "@/constants/theme";
+import { SchemeColors } from "@/constants/theme";
 
-type ThemeContextValue = {
-  colorScheme: ColorScheme;
-  setColorScheme: (scheme: ColorScheme) => void;
-};
+type ThemeContextValue = Record<string, never>;
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useSystemColorScheme() ?? "light";
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(systemScheme);
+  // 常にライトモードの色を使用
+  const palette = SchemeColors.light;
 
-  const applyScheme = useCallback((scheme: ColorScheme) => {
-    nativewindColorScheme.set(scheme);
-    Appearance.setColorScheme?.(scheme);
+  // 初期化時に即座に背景色を設定（白色フラッシュを防ぐ）- useLayoutEffectで同期的に実行
+  useLayoutEffect(() => {
     if (typeof document !== "undefined") {
       const root = document.documentElement;
-      root.dataset.theme = scheme;
-      root.classList.toggle("dark", scheme === "dark");
-      const palette = SchemeColors[scheme];
+      const body = document.body;
+      // 同期的に背景色を設定
+      root.style.backgroundColor = palette.background;
+      if (body) {
+        body.style.backgroundColor = palette.background;
+      }
+      if (root.parentElement) {
+        root.parentElement.style.backgroundColor = palette.background;
+      }
+    }
+  }, [palette.background]);
+
+  // テーマを適用
+  useEffect(() => {
+    Appearance.setColorScheme?.("light");
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      const body = document.body;
+      root.dataset.theme = "light";
+      // ダーククラスを確実に削除
+      root.classList.remove("dark");
+      // カラー変数を設定
       Object.entries(palette).forEach(([token, value]) => {
         root.style.setProperty(`--color-${token}`, value);
       });
+      // 背景色を設定して白色フラッシュを防ぐ
+      root.style.backgroundColor = palette.background;
+      if (body) {
+        body.style.backgroundColor = palette.background;
+      }
+      if (root.parentElement) {
+        root.parentElement.style.backgroundColor = palette.background;
+      }
     }
-  }, []);
-
-  const setColorScheme = useCallback((scheme: ColorScheme) => {
-    setColorSchemeState(scheme);
-    applyScheme(scheme);
-  }, [applyScheme]);
-
-  useEffect(() => {
-    applyScheme(colorScheme);
-  }, [applyScheme, colorScheme]);
+  }, [palette]);
 
   const themeVariables = useMemo(
     () =>
       vars({
-        "color-primary": SchemeColors[colorScheme].primary,
-        "color-background": SchemeColors[colorScheme].background,
-        "color-surface": SchemeColors[colorScheme].surface,
-        "color-foreground": SchemeColors[colorScheme].foreground,
-        "color-muted": SchemeColors[colorScheme].muted,
-        "color-border": SchemeColors[colorScheme].border,
-        "color-success": SchemeColors[colorScheme].success,
-        "color-warning": SchemeColors[colorScheme].warning,
-        "color-error": SchemeColors[colorScheme].error,
+        "color-primary": palette.primary,
+        "color-background": palette.background,
+        "color-surface": palette.surface,
+        "color-foreground": palette.foreground,
+        "color-muted": palette.muted,
+        "color-border": palette.border,
+        "color-success": palette.success,
+        "color-warning": palette.warning,
+        "color-error": palette.error,
       }),
-    [colorScheme],
+    [palette],
   );
 
-  const value = useMemo(
-    () => ({
-      colorScheme,
-      setColorScheme,
-    }),
-    [colorScheme, setColorScheme],
-  );
-  console.log(value, themeVariables)
+  const value = useMemo(() => ({}), []);
 
   return (
     <ThemeContext.Provider value={value}>
