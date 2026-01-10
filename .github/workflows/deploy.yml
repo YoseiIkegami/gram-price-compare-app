@@ -37,6 +37,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build web
+        env:
+          EXPO_PUBLIC_BASE_PATH: /gram-price-compare-app
         run: pnpm build:web
 
       - name: Setup Pages
