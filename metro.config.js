@@ -4,13 +4,6 @@ const path = require("path");
 
 const config = getDefaultConfig(__dirname);
 
-// Block cache directories from being watched
-config.watchFolders = config.watchFolders || [];
-config.blockList = [
-  ...(config.blockList || []),
-  /node_modules\/react-native-css-interop\/\.cache\/.*/,
-];
-
 // Disable file watching for cache files in resolver
 config.resolver = {
   ...config.resolver,
