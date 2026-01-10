@@ -44,8 +44,6 @@ jobs:
           find node_modules -type d -name ".cache" -exec rm -rf {} + 2>/dev/null || true
 
       - name: Build web
-        env:
-          EXPO_NO_METRO_LAZY: 1
         run: pnpm build:web
 
       - name: Setup Pages
