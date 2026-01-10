@@ -63,6 +63,7 @@ const config: ExpoConfig = {
   web: {
     bundler: "metro",
     output: "static",
+    baseUrl: "/gram-price-compare-app",
     favicon: "./assets/images/favicon.png",
   },
   plugins: [
