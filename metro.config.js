@@ -1,7 +1,15 @@
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
+const path = require("path");
 
 const config = getDefaultConfig(__dirname);
+
+// Block cache directories from being watched
+config.watchFolders = config.watchFolders || [];
+config.blockList = [
+  ...(config.blockList || []),
+  /node_modules\/react-native-css-interop\/\.cache\/.*/,
+];
 
 module.exports = withNativeWind(config, {
   input: "./global.css",
