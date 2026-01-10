@@ -147,7 +147,7 @@ export default function AboutScreen() {
           </Text>
           <Pressable
             onPress={() =>
-              openLink("https://buymeacoffee.com")
+              openLink("https://buymeacoffee.com/yoseiikegami")
             }
             className="py-3 px-4 rounded-lg items-center"
             style={({ pressed }) => ({

@@ -69,3 +69,7 @@
 - [x] 横スクロール時のスナップ設定調整
 - [x] モバイル画面の余白最適化
 
+
+## Phase 9: リンク修正
+- [x] About画面の寺付リンクをhttps://buymeacoffee.com/yoseiikegamiに更新
+
