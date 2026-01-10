@@ -150,10 +150,10 @@ export default function HomeScreen() {
   const comparison = compareProducts(products);
 
   return (
-    <ScreenContainer className="bg-background flex-col">
+    <ScreenContainer className="bg-background flex-col p-0">
       {/* ヘッダー */}
-      <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
-        <Text className="text-xl font-bold text-foreground">
+      <View className="flex-row items-center justify-between px-3 py-2.5 border-b border-border">
+        <Text className="text-lg font-bold text-foreground">
           グラム単価比較
         </Text>
         <Pressable
@@ -161,25 +161,25 @@ export default function HomeScreen() {
             triggerLightHaptic();
             router.push("../history" as any);
           }}
-          className="px-3 py-2 rounded-lg"
+          className="px-2 py-1.5 rounded-lg"
           style={({ pressed }) => ({
             opacity: pressed ? 0.7 : 1,
           })}
         >
           <MaterialIcons
             name="history"
-            size={24}
+            size={20}
             color={colors.primary}
           />
         </Pressable>
       </View>
 
       {/* アクションバー（上部） */}
-      <View className="flex-row gap-2 px-4 py-3 border-b border-border">
+      <View className="flex-row gap-1.5 px-3 py-2 border-b border-border">
         {/* クリアボタン */}
         <Pressable
           onPress={handleClear}
-          className="flex-1 py-2 px-3 rounded-lg flex-row items-center justify-center gap-1"
+          className="flex-1 py-1.5 px-2 rounded-lg flex-row items-center justify-center gap-1"
           style={({ pressed }) => ({
             backgroundColor: colors.primary,
             opacity: pressed ? 0.8 : 1,
@@ -187,10 +187,10 @@ export default function HomeScreen() {
         >
           <MaterialIcons
             name="clear"
-            size={18}
+            size={16}
             color="white"
           />
-          <Text className="text-white font-semibold text-sm">
+          <Text className="text-white font-semibold text-xs">
             クリア
           </Text>
         </Pressable>
@@ -199,7 +199,7 @@ export default function HomeScreen() {
         {products.length < 4 && (
           <Pressable
             onPress={handleAddProduct}
-            className="flex-1 py-2 px-3 rounded-lg flex-row items-center justify-center gap-1 border"
+            className="flex-1 py-1.5 px-2 rounded-lg flex-row items-center justify-center gap-1 border"
             style={({ pressed }) => ({
               borderColor: colors.primary,
               backgroundColor: pressed ? `${colors.primary}10` : "transparent",
@@ -208,10 +208,10 @@ export default function HomeScreen() {
           >
             <MaterialIcons
               name="add"
-              size={18}
+              size={16}
               color={colors.primary}
             />
-            <Text className="text-primary font-semibold text-sm">
+            <Text className="text-primary font-semibold text-xs">
               追加
             </Text>
           </Pressable>
@@ -221,44 +221,76 @@ export default function HomeScreen() {
       {/* コンテンツ */}
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
-        className="flex-1 px-4 py-4"
+        className="flex-1 px-3 py-3"
         showsVerticalScrollIndicator={false}
       >
         {/* 商品カード横並びスクロール */}
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <ProductCardHorizontal
-              label={item.label}
-              price={item.price}
-              weight={item.weight}
-              pricePerGram={item.pricePerGram}
-              isCheapest={item.id === comparison.cheapestId}
-              isEditing={editingLabel === item.id}
-              onPriceChange={(price) => handlePriceChange(index, price)}
-              onWeightChange={(weight) => handleWeightChange(index, weight)}
-              onLabelChange={(label) => {
-                handleLabelChange(index, label);
-              }}
-              onRemove={() => handleRemoveProduct(index)}
-              onEditLabel={() => {
-                setEditingLabel(
-                  editingLabel === item.id ? null : item.id
-                );
-              }}
-              showRemove={products.length > 2}
-              priceInputRef={priceInputRefs.current[item.id] as any}
-              weightInputRef={weightInputRefs.current[item.id] as any}
-            />
-          )}
-          horizontal
-          scrollEnabled
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 12 }}
-          snapToInterval={280}
-          decelerationRate="fast"
-        />
+        <View className="mb-4">
+          <FlatList
+            data={products}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item, index }) => (
+              <ProductCardHorizontal
+                label={item.label}
+                price={item.price}
+                weight={item.weight}
+                pricePerGram={item.pricePerGram}
+                isCheapest={item.id === comparison.cheapestId}
+                isEditing={editingLabel === item.id}
+                onPriceChange={(price) => handlePriceChange(index, price)}
+                onWeightChange={(weight) => handleWeightChange(index, weight)}
+                onLabelChange={(label) => {
+                  handleLabelChange(index, label);
+                }}
+                onRemove={() => handleRemoveProduct(index)}
+                onEditLabel={() => {
+                  setEditingLabel(
+                    editingLabel === item.id ? null : item.id
+                  );
+                }}
+                showRemove={products.length > 2}
+                priceInputRef={priceInputRefs.current[item.id] as any}
+                weightInputRef={weightInputRefs.current[item.id] as any}
+              />
+            )}
+            horizontal
+            scrollEnabled
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 10 }}
+            snapToInterval={140}
+            decelerationRate="fast"
+            scrollEventThrottle={16}
+          />
+        </View>
+
+        {/* 比較結果サマリー */}
+        {comparison.cheapestId && (
+          <View
+            className="rounded-lg p-3 mb-4"
+            style={{
+              backgroundColor: `${colors.primary}10`,
+              borderLeftWidth: 4,
+              borderLeftColor: colors.primary,
+            }}
+          >
+            <Text className="text-xs text-muted mb-1">最安商品</Text>
+            <View className="flex-row items-baseline gap-2">
+              <Text className="text-2xl font-bold text-primary">
+                {
+                  products.find((p) => p.id === comparison.cheapestId)?.label
+                }
+              </Text>
+              <Text className="text-lg font-semibold text-primary">
+                {
+                  products
+                    .find((p) => p.id === comparison.cheapestId)
+                    ?.pricePerGram.toFixed(2)
+                }
+              </Text>
+              <Text className="text-sm text-primary">円/g</Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </ScreenContainer>
   );

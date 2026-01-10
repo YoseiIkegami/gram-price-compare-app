@@ -44,7 +44,7 @@ export function ProductCardHorizontal({
   return (
     <View
       className={cn(
-        "rounded-xl p-3 border min-w-fit",
+        "rounded-lg p-2.5 border w-32",
         isCheapest ? "bg-primary/10 border-primary" : "bg-surface border-border"
       )}
       style={{
@@ -53,34 +53,34 @@ export function ProductCardHorizontal({
       }}
     >
       {/* ヘッダー：商品名と削除ボタン */}
-      <View className="flex-row items-center justify-between mb-2">
+      <View className="flex-row items-center justify-between mb-1.5">
         <Pressable
           onPress={() => {
             triggerLightHaptic();
             onEditLabel?.();
             labelInputRef.current?.focus();
           }}
-          className="flex-row items-center gap-1"
+          className="flex-row items-center gap-0.5 flex-1"
         >
           {isEditing ? (
             <TextInput
               ref={labelInputRef}
               value={label}
               onChangeText={onLabelChange}
-              placeholder="商品名"
+              placeholder="名前"
               placeholderTextColor={colors.muted}
-              className="text-base font-semibold text-foreground px-2 py-1 border border-primary rounded"
+              className="text-xs font-semibold text-foreground px-1.5 py-0.5 border border-primary rounded flex-1"
               style={{ color: colors.foreground, borderColor: colors.primary }}
-              maxLength={10}
+              maxLength={8}
             />
           ) : (
             <>
-              <Text className="text-base font-semibold text-foreground">
+              <Text className="text-sm font-semibold text-foreground">
                 {label}
               </Text>
               <MaterialIcons
                 name="edit"
-                size={14}
+                size={12}
                 color={colors.muted}
               />
             </>
@@ -94,11 +94,11 @@ export function ProductCardHorizontal({
               triggerLightHaptic();
               onRemove();
             }}
-            className="p-1"
+            className="p-0.5"
           >
             <MaterialIcons
               name="delete-outline"
-              size={18}
+              size={14}
               color={colors.error}
             />
           </Pressable>
@@ -106,16 +106,16 @@ export function ProductCardHorizontal({
 
         {/* 最安アイコン */}
         {isCheapest && (
-          <Text className="text-lg ml-1">👑</Text>
+          <Text className="text-base ml-0.5">👑</Text>
         )}
       </View>
 
       {/* 入力フィールド */}
-      <View className="gap-2">
+      <View className="gap-1">
         {/* 価格入力 */}
         <TextInput
           ref={priceInputRef}
-          className="border border-border rounded px-2 py-1.5 text-foreground text-sm"
+          className="border border-border rounded px-1.5 py-1 text-foreground text-xs"
           placeholder="100"
           placeholderTextColor={colors.muted}
           keyboardType="decimal-pad"
@@ -135,7 +135,7 @@ export function ProductCardHorizontal({
         {/* 内容量入力 */}
         <TextInput
           ref={weightInputRef}
-          className="border border-border rounded px-2 py-1.5 text-foreground text-sm"
+          className="border border-border rounded px-1.5 py-1 text-foreground text-xs"
           placeholder="500"
           placeholderTextColor={colors.muted}
           keyboardType="decimal-pad"
@@ -153,11 +153,11 @@ export function ProductCardHorizontal({
       </View>
 
       {/* 計算結果 */}
-      <View className="border-t border-border pt-2 mt-2">
+      <View className="border-t border-border pt-1 mt-1">
         <Text className="text-xs text-muted mb-0.5">単価</Text>
         <Text
           className={cn(
-            "text-lg font-bold",
+            "text-base font-bold leading-tight",
             isCheapest ? "text-primary" : "text-foreground"
           )}
           style={{
