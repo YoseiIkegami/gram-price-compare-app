@@ -73,3 +73,7 @@
 ## Phase 9: リンク修正
 - [x] About画面の寺付リンクをhttps://buymeacoffee.com/yoseiikegamiに更新
 
+
+## Phase 10: ドキュメント作成
+- [x] README.mdの作成
+
