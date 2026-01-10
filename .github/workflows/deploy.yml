@@ -36,6 +36,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Clear Metro cache
+        run: |
+          rm -rf node_modules/react-native-css-interop/.cache
+          rm -rf .expo
+          rm -rf .metro-health-check*
+
       - name: Build web
         run: pnpm build:web
 
