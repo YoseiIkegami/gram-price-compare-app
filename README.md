@@ -202,4 +202,4 @@ MIT License
 
 ---
 
-**Made with ❤️ for smart shopping**
+**Made by YoseiIkegami**
