@@ -68,6 +68,7 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
+    "expo-asset",
     [
       "expo-audio",
       {
@@ -105,6 +106,11 @@ const config: ExpoConfig = {
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
+  },
+  extra: {
+    eas: {
+      projectId: "ce9e2fa5-ad0f-4fab-8b33-5de006b78710",
+    },
   },
 };
 

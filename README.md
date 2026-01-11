@@ -124,8 +124,47 @@ pnpm format
 # TypeScript型チェック
 pnpm check
 
-# ビルド（本番用）
-pnpm build
+# Webビルド（GitHub Pages向け）
+pnpm build:web
+```
+
+## Androidで動作確認（Android Studioダウンロード中でもOK）
+
+### 1) 実機で起動（Expo Go）
+
+1. Android端末に **Expo Go** をインストール
+2. PCと端末を同じWi-Fiに接続
+3. 開発サーバー起動:
+
+```bash
+pnpm android
+```
+
+- QRコードが出たら Expo Go でスキャンして起動します
+- もし社内Wi-Fi等で繋がらない場合は、以下に切り替えると安定します:
+
+```bash
+npx expo start --tunnel
+```
+
+### 2) APK / AAB を作ってインストール（クラウドビルド: EAS）
+
+Android Studioなしで **ビルド成果物（APK/AAB）** を作れます（Expoアカウントが必要）。
+
+```bash
+pnpm dlx eas-cli@latest login
+pnpm dlx eas-cli@latest build -p android --profile preview
+```
+
+- `preview` は **APK**（端末に直接インストールして動作確認用）
+- `production` は **AAB**（Google Play提出用）
+
+## Android Studio準備後（ローカル実機/エミュで起動）
+
+Android Studio（Android SDK）を入れた後は、ローカルでネイティブ起動もできます:
+
+```bash
+npx expo run:android
 ```
 
 ## 主要な計算ロジック
