@@ -166,8 +166,8 @@ export default function Calculator() {
       </header>
 
       {/* コンテンツ */}
-      <main className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="mb-4 space-y-4">
+      <main className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6">
+        <div className="mb-4 space-y-4 md:space-y-6">
           {products.map((item) => (
             <ProductCard
               key={item.index}
@@ -204,17 +204,17 @@ export default function Calculator() {
           const cheapestLabels = cheapestProducts.map((p) => p.label).join('・');
 
           return (
-            <div className="rounded-2xl p-5 mb-4 bg-surface border-2 border-primary shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">👑</span>
-                <span className="text-sm font-semibold text-muted">最安商品</span>
+            <div className="rounded-2xl p-6 md:p-8 mb-4 bg-surface border-2 border-primary shadow-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-3xl md:text-4xl">👑</span>
+                <span className="text-base md:text-lg font-semibold text-muted">最安商品</span>
               </div>
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-3xl font-bold text-primary">{cheapestLabels}</span>
-                <span className="text-xl font-semibold text-primary">
+                <span className="text-2xl md:text-4xl font-bold text-primary">{cheapestLabels}</span>
+                <span className="text-3xl md:text-5xl font-semibold text-primary">
                   {cheapestPricePerGram.toFixed(2)}
                 </span>
-                <span className="text-base text-primary">円/g</span>
+                <span className="text-lg md:text-xl text-primary">円/g</span>
               </div>
             </div>
           );

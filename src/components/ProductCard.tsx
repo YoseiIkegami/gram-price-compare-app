@@ -136,7 +136,7 @@ export default function ProductCard({
   return (
     <div
       className={cn(
-        'rounded-2xl p-4 border-2 w-full shadow-md',
+        'rounded-2xl p-6 border-2 w-full shadow-md',
         isCheapest
           ? 'bg-primary/10 border-primary shadow-primary/20'
           : 'bg-surface border-border shadow-border/10'
@@ -220,7 +220,7 @@ export default function ProductCard({
         <div
           onClick={handlePriceContainerClick}
           className={cn(
-            'flex items-center border-2 rounded-xl bg-background cursor-text transition-colors',
+            'flex items-center border-2 rounded-xl bg-background cursor-text transition-colors min-h-[56px]',
             isPriceFocused ? 'border-primary' : 'border-border'
           )}
         >
@@ -239,11 +239,11 @@ export default function ProductCard({
                 handlePriceSubmit();
               }
             }}
-            className="flex-1 text-sm font-medium text-foreground py-2.5 pl-3 pr-2 outline-none bg-transparent"
+            className="flex-1 text-base md:text-lg font-medium text-foreground py-3 pl-4 pr-2 outline-none bg-transparent"
           />
           <span
             className={cn(
-              'text-sm font-medium pr-3',
+              'text-base md:text-lg font-medium pr-4',
               isPriceFocused ? 'text-primary' : 'text-muted'
             )}
           >
@@ -255,7 +255,7 @@ export default function ProductCard({
         <div
           onClick={handleWeightContainerClick}
           className={cn(
-            'flex items-center border-2 rounded-xl bg-background cursor-text transition-colors',
+            'flex items-center border-2 rounded-xl bg-background cursor-text transition-colors min-h-[56px]',
             isWeightFocused ? 'border-primary' : 'border-border'
           )}
         >
@@ -274,11 +274,11 @@ export default function ProductCard({
                 handleWeightSubmit();
               }
             }}
-            className="flex-1 text-sm font-medium text-foreground py-2.5 pl-3 pr-2 outline-none bg-transparent"
+            className="flex-1 text-base md:text-lg font-medium text-foreground py-3 pl-4 pr-2 outline-none bg-transparent"
           />
           <span
             className={cn(
-              'text-sm font-medium pr-3',
+              'text-base md:text-lg font-medium pr-4',
               isWeightFocused ? 'text-primary' : 'text-muted'
             )}
           >
@@ -288,18 +288,18 @@ export default function ProductCard({
       </div>
 
       {/* 計算結果セクション */}
-      <div className="border-t-2 border-border pt-3 mt-3">
-        <span className="text-xs font-semibold text-muted mb-2 block">単価</span>
-        <div className="flex items-baseline gap-1">
+      <div className="border-t-2 border-border pt-4 mt-4">
+        <span className="text-sm md:text-base font-semibold text-muted mb-3 block">単価</span>
+        <div className="flex items-baseline gap-2">
           <span
             className={cn(
-              'text-2xl font-bold',
+              'text-4xl md:text-5xl font-bold',
               isCheapest ? 'text-primary' : 'text-foreground'
             )}
           >
             {pricePerGram === 0 ? '—' : pricePerGram.toFixed(2)}
           </span>
-          <span className="text-sm text-muted">円/g</span>
+          <span className="text-base md:text-lg text-muted">円/g</span>
         </div>
       </div>
     </div>
