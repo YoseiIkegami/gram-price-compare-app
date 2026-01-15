@@ -2,33 +2,12 @@ import { Platform } from "react-native";
 
 import themeConfig from "@/theme.config";
 
-export type ColorScheme = "light" | "dark";
-
 export const ThemeColors = themeConfig.themeColors;
 
 type ThemeColorTokens = typeof ThemeColors;
 type ThemeColorName = keyof ThemeColorTokens;
-type SchemePalette = Record<ColorScheme, Record<ThemeColorName, string>>;
-type SchemePaletteItem = SchemePalette[ColorScheme];
 
-function buildSchemePalette(colors: ThemeColorTokens): SchemePalette {
-  const palette: SchemePalette = {
-    light: {} as SchemePalette["light"],
-    dark: {} as SchemePalette["dark"],
-  };
-
-  (Object.keys(colors) as ThemeColorName[]).forEach((name) => {
-    const swatch = colors[name];
-    palette.light[name] = swatch.light;
-    palette.dark[name] = swatch.dark;
-  });
-
-  return palette;
-}
-
-export const SchemeColors = buildSchemePalette(ThemeColors);
-
-type RuntimePalette = SchemePaletteItem & {
+type RuntimePalette = ThemeColorTokens & {
   text: string;
   background: string;
   tint: string;
@@ -38,8 +17,8 @@ type RuntimePalette = SchemePaletteItem & {
   border: string;
 };
 
-function buildRuntimePalette(scheme: ColorScheme): RuntimePalette {
-  const base = SchemeColors[scheme];
+function buildRuntimePalette(): RuntimePalette {
+  const base = ThemeColors;
   return {
     ...base,
     text: base.foreground,
@@ -53,11 +32,10 @@ function buildRuntimePalette(scheme: ColorScheme): RuntimePalette {
 }
 
 export const Colors = {
-  light: buildRuntimePalette("light"),
-  dark: buildRuntimePalette("dark"),
-} satisfies Record<ColorScheme, RuntimePalette>;
+  light: buildRuntimePalette(),
+} as const;
 
-export type ThemeColorPalette = (typeof Colors)[ColorScheme];
+export type ThemeColorPalette = typeof Colors.light;
 
 export const Fonts = Platform.select({
   ios: {

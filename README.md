@@ -2,6 +2,8 @@
 
 スーパーやコンビニで一瞬でどれが一番お得か分かる、超軽量グラム単価比較アプリです。
 
+アプリ名：どち得？ グラム単価比較アプリ
+
 ## 概要
 
 複数の商品の価格と内容量を入力するだけで、自動的にグラム単価を計算し、最安商品を視覚的に強調表示します。片手操作に最適化されたシンプルなUIで、売り場での迅速な判断をサポートします。
@@ -42,43 +44,6 @@
 - **スタイリング**: TailwindCSS (NativeWind)
 - **状態管理**: React Hooks (useState)
 - **テスト**: Vitest
-- **アイコン**: Material Icons + Expo Symbols
-
-## プロジェクト構成
-
-```
-gram-price-compare-app/
-├── app/
-│   ├── (tabs)/
-│   │   ├── index.tsx           # 計算画面（メイン）
-│   │   ├── about.tsx           # About画面
-│   │   └── _layout.tsx         # タブナビゲーション
-│   └── _layout.tsx             # ルートレイアウト
-├── components/
-│   ├── screen-container.tsx    # SafeArea対応コンテナ
-│   ├── product-card.tsx        # 商品カード
-│   ├── haptic-tab.tsx          # ハプティクスタブ
-│   └── ui/
-│       └── icon-symbol.tsx     # アイコンマッピング
-├── lib/
-│   ├── calculator.ts           # 計算ロジック
-│   ├── calculator.test.ts      # ユニットテスト
-│   ├── haptics.ts              # ハプティクスフィードバック
-│   ├── utils.ts                # ユーティリティ関数
-│   └── theme-provider.tsx      # テーマプロバイダー
-├── hooks/
-│   ├── use-colors.ts           # テーマカラーフック
-│   ├── use-color-scheme.ts     # ダークモード検出
-│   └── use-color-scheme.web.ts # Web用ダークモード検出
-├── constants/
-│   ├── const.ts                # 定数定義
-│   └── theme.ts                # テーマ定義
-├── assets/images/              # アプリアイコン・スプラッシュ
-├── app.config.ts               # Expo設定
-├── tailwind.config.js          # Tailwind設定
-├── theme.config.js             # カラートークン定義
-└── package.json                # 依存関係
-```
 
 ## 開発方法
 
@@ -93,79 +58,30 @@ pnpm dev
 
 # テストの実行
 pnpm test
-
-# コードのリント
-pnpm lint
-
-# コードのフォーマット
-pnpm format
 ```
 
 ### ブラウザでプレビュー
 
-開発サーバー起動後、ターミナルに表示されるURLにアクセスするか、自動的に開かれるブラウザでアプリを確認できます。
-
-```bash
-# 開発サーバー起動後、以下のようなURLが表示されます:
-# Web: http://localhost:8081
-```
-
-ブラウザで直接アクセスする場合は、ターミナルで`w`キーを押すか、表示されたURLをクリックしてください。
-
-### モバイルデバイスでテスト
-
-1. デバイスに Expo Go アプリをインストール
-2. 開発サーバーのQRコードをスキャン
-3. Expo Go でアプリが起動します
+開発サーバー起動後、ブラウザで `http://localhost:8081` にアクセスします。
 
 ### ビルド
 
 ```bash
-# TypeScript型チェック
-pnpm check
-
-# Webビルド（GitHub Pages向け）
+# Webビルド
 pnpm build:web
 ```
 
-## Androidで動作確認（Android Studioダウンロード中でもOK）
+ビルド後、`dist/` ディレクトリに静的ファイルが生成されます。
 
-### 1) 実機で起動（Expo Go）
+### デプロイ
 
-1. Android端末に **Expo Go** をインストール
-2. PCと端末を同じWi-Fiに接続
-3. 開発サーバー起動:
+詳細なデプロイ手順は [DEPLOY.md](./DEPLOY.md) を参照してください。
 
-```bash
-pnpm android
-```
+**Vercelへのデプロイ（推奨）:**
+- 詳細手順: [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md)
 
-- QRコードが出たら Expo Go でスキャンして起動します
-- もし社内Wi-Fi等で繋がらない場合は、以下に切り替えると安定します:
-
-```bash
-npx expo start --tunnel
-```
-
-### 2) APK / AAB を作ってインストール（クラウドビルド: EAS）
-
-Android Studioなしで **ビルド成果物（APK/AAB）** を作れます（Expoアカウントが必要）。
-
-```bash
-pnpm dlx eas-cli@latest login
-pnpm dlx eas-cli@latest build -p android --profile preview
-```
-
-- `preview` は **APK**（端末に直接インストールして動作確認用）
-- `production` は **AAB**（Google Play提出用）
-
-## Android Studio準備後（ローカル実機/エミュで起動）
-
-Android Studio（Android SDK）を入れた後は、ローカルでネイティブ起動もできます:
-
-```bash
-npx expo run:android
-```
+**GitHub Pages:**
+- `main` ブランチにプッシュするだけで自動デプロイ
 
 ## 主要な計算ロジック
 
@@ -182,44 +98,16 @@ pricePerGram = price / weight
 
 ## テスト
 
-ユニットテストは `lib/calculator.test.ts` に記載されています。
-
 ```bash
 # テスト実行
 pnpm test
-
-# テストカバレッジ確認
-pnpm test --coverage
 ```
 
-**テスト項目**（15テスト）:
+**テスト項目**:
 - グラム単価の計算
 - 複数商品の比較
 - エッジケース（0値、小数点）
 - 商品IDの生成
-
-## パフォーマンス
-
-- **起動時間**: < 2秒（オフライン）
-- **計算速度**: リアルタイム（入力時に即座に計算）
-- **メモリ使用量**: < 30MB
-- **バンドルサイズ**: < 5MB
-
-## ブラウザ・デバイス対応
-
-| プラットフォーム | 対応状況 |
-|---|---|
-| iOS 13+ | ✅ 対応 |
-| Android 6+ | ✅ 対応 |
-| Web（Chrome/Safari） | ✅ 対応 |
-
-## ダークモード
-
-アプリはシステムのダークモード設定に自動で対応します。ユーザーは手動でテーマを切り替えることもできます。
-
-## データ保存
-
-すべてのデータはデバイスのローカルストレージ（AsyncStorage）に保存されます。クラウド同期やサーバー連携はありません。
 
 ## プライバシー
 
@@ -232,12 +120,6 @@ MIT License
 ## サポート
 
 バグ報告や機能リクエストは、GitHub Issues で受け付けています。
-
-## 寄付
-
-このアプリが役に立つ場合は、以下のリンクからサポーターになることができます:
-
-[☕ Buy Me a Coffee](https://buymeacoffee.com/yoseiikegami)
 
 ---
 

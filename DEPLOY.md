@@ -1,4 +1,7 @@
-# ブラウザで公開する方法
+# Webアプリとして公開する方法
+
+> **方針:** ネイティブアプリ（iOS/Android）のリリースは複雑で時間がかかるため、**Webアプリとして公開することを優先**します。
+> ユーザーはブラウザからすぐにアクセスでき、更新も即座に反映されます。
 
 ## 方法1: ローカルで開発サーバーを起動
 
@@ -30,11 +33,19 @@ pnpm build:web
 
 #### Vercel
 
-1. [Vercel](https://vercel.com) にサインアップ
-2. GitHubリポジトリをインポート
-3. Build Command: `pnpm build:web`
-4. Output Directory: `dist`
-5. Deploy
+詳細な手順は [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md) を参照してください。
+
+**クイックスタート:**
+1. [Vercel](https://vercel.com) にGitHubアカウントでログイン
+2. **Add New...** → **Project** をクリック
+3. GitHubリポジトリ **gram-price-compare-app** を選択
+4. **Import** をクリック
+5. ビルド設定を確認（自動検出されます）:
+   - Build Command: `pnpm build:web`
+   - Output Directory: `dist`
+6. **Deploy** をクリック
+
+`vercel.json` が設定済みなので、自動的に最適な設定が適用されます。
 
 #### Netlify
 

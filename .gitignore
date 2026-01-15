@@ -60,3 +60,13 @@ Thumbs.db
 *.tgz
 *.tar.gz
 .cache/
+
+# Native app build artifacts
+*.aab
+*.apk
+*.ipa
+builds/
+
+# Debug files
+bugreport-*.zip
+*.log

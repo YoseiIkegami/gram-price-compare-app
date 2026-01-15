@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useLayoutEffect, useMemo } from "
 import { Appearance, View } from "react-native";
 import { vars } from "nativewind";
 
-import { SchemeColors } from "@/constants/theme";
+import { Colors } from "@/constants/theme";
 
 type ThemeContextValue = Record<string, never>;
 
@@ -10,7 +10,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // 常にライトモードの色を使用
-  const palette = SchemeColors.light;
+  const palette = Colors.light;
 
   // 初期化時に即座に背景色を設定（白色フラッシュを防ぐ）- useLayoutEffectで同期的に実行
   useLayoutEffect(() => {

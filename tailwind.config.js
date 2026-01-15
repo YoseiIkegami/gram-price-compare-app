@@ -1,20 +1,16 @@
 const { themeColors } = require("./theme.config");
-const plugin = require("tailwindcss/plugin");
 
 const tailwindColors = Object.fromEntries(
-  Object.entries(themeColors).map(([name, swatch]) => [
+  Object.entries(themeColors).map(([name, value]) => [
     name,
     {
       DEFAULT: `var(--color-${name})`,
-      light: swatch.light,
-      dark: swatch.dark,
     },
   ]),
 );
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // ダークモードを無効化 - 常にライトモードのみ
   // Scan all component and app files for Tailwind classes
   content: ["./app/**/*.{js,ts,tsx}", "./components/**/*.{js,ts,tsx}", "./lib/**/*.{js,ts,tsx}", "./hooks/**/*.{js,ts,tsx}"],
 
