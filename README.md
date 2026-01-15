@@ -70,22 +70,24 @@ pnpm lint
 
 ```
 gram-price-compare-app/
+├── public/              # 静的ファイル（favicon等）
 ├── src/
-│   ├── App.tsx              # メインアプリコンポーネント
-│   ├── main.tsx             # エントリーポイント
+│   ├── App.tsx          # メインアプリコンポーネント
+│   ├── main.tsx          # エントリーポイント
 │   ├── pages/
-│   │   ├── Calculator.tsx   # 計算画面
-│   │   └── About.tsx        # About画面
+│   │   ├── Calculator.tsx # 計算画面
+│   │   └── About.tsx     # About画面
 │   ├── components/
 │   │   └── ProductCard.tsx # 商品カードコンポーネント
 │   ├── lib/
-│   │   ├── calculator.ts    # 計算ロジック
-│   │   └── utils.ts         # ユーティリティ関数
+│   │   ├── calculator.ts # 計算ロジック
+│   │   └── utils.ts      # ユーティリティ関数
 │   └── styles/
-│       └── index.css        # グローバルスタイル
-├── index.html               # HTMLテンプレート
-├── vite.config.ts           # Vite設定
-├── tailwind.config.js       # Tailwind設定
+│       └── index.css     # グローバルスタイル
+├── index.html            # HTMLテンプレート
+├── vite.config.ts        # Vite設定
+├── tailwind.config.js    # Tailwind設定
+├── vercel.json           # Vercel設定
 └── package.json
 ```
 
@@ -95,9 +97,7 @@ gram-price-compare-app/
 
 詳細は [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md) を参照してください。
 
-### GitHub Pages
-
-詳細は [DEPLOY.md](./DEPLOY.md) を参照してください。
+VercelにGitHubリポジトリを接続すると、自動的にデプロイされます。
 
 ## ライセンス
 

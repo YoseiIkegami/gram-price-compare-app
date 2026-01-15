@@ -27,13 +27,13 @@
 Vercelが自動的に以下の設定を検出します：
 
 - **Framework Preset**: Other
-- **Build Command**: `pnpm build:web`
+- **Build Command**: `pnpm build`
 - **Output Directory**: `dist`
 - **Install Command**: `pnpm install`
 - **Root Directory**: `./` (プロジェクトルート)
 
 **確認事項:**
-- ✅ Build Command が `pnpm build:web` になっているか
+- ✅ Build Command が `pnpm build` になっているか
 - ✅ Output Directory が `dist` になっているか
 - ✅ Install Command が `pnpm install` になっているか
 
@@ -120,7 +120,7 @@ Vercelダッシュボードからプロジェクトをインポートすると�
 
 ```json
 {
-  "buildCommand": "pnpm build:web",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist",
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
