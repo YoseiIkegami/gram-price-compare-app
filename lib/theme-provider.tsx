@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo } from "react";
-import { Appearance, View } from "react-native";
+import { View } from "react-native";
 import { vars } from "nativewind";
 
 import { Colors } from "@/constants/theme";
@@ -30,7 +30,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // テーマを適用
   useEffect(() => {
-    Appearance.setColorScheme?.("light");
+    // Web環境ではAppearance.setColorSchemeは使用しない
     if (typeof document !== "undefined") {
       const root = document.documentElement;
       const body = document.body;
