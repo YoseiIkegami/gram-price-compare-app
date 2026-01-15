@@ -17,6 +17,7 @@ const config: ExpoConfig = {
   version: "0.1.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
+  userInterfaceStyle: "light",
   web: {
     bundler: "metro",
     output: "static",

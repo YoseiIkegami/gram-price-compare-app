@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useLayoutEffect, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 import { View } from "react-native";
 import { vars } from "nativewind";
 
@@ -12,23 +12,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // 常にライトモードの色を使用
   const palette = Colors.light;
 
-  // 初期化時に即座に背景色を設定（白色フラッシュを防ぐ）- useLayoutEffectで同期的に実行
-  useLayoutEffect(() => {
-    if (typeof document !== "undefined") {
-      const root = document.documentElement;
-      const body = document.body;
-      // 同期的に背景色を設定
-      root.style.backgroundColor = palette.background;
-      if (body) {
-        body.style.backgroundColor = palette.background;
-      }
-      if (root.parentElement) {
-        root.parentElement.style.backgroundColor = palette.background;
-      }
-    }
-  }, [palette.background]);
-
-  // テーマを適用
+  // テーマを適用（クライアントサイドでのみ実行）
   useEffect(() => {
     // Web環境ではAppearance.setColorSchemeは使用しない
     if (typeof document !== "undefined") {
