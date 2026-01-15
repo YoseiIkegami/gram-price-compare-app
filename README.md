@@ -12,7 +12,7 @@
 - ⚡ **超軽量・高速** - 起動が速く、オフライン完全対応
 - 📊 **自動計算** - 価格と内容量を入力するだけでグラム単価を自動計算
 - 👑 **最安表示** - 最安商品を色とアイコンで視覚的に強調
-- 📱 **片手操作** - モバイル画面に最適化されたコンパクトなUI
+- 📱 **レスポンシブデザイン** - モバイル・デスクトップ両対応
 
 ## 使い方
 
@@ -25,25 +25,25 @@
 ### 機能詳細
 
 **商品の追加・削除**:
-- 最初はA・Bの2商品が表示されます
+- 最初は商品1・商品2の2商品が表示されます
 - 「追加」ボタンで最大4商品まで比較できます
 - 各商品の右上のゴミ箱アイコンで削除できます
 
 **商品名の編集**:
-- 商品名の横のペンアイコンをタップして編集できます
+- 商品名の横のペンアイコンをクリックして編集できます
 - 商品の識別に便利です（例：「牛乳A」「牛乳B」）
 
 **計算結果の確認**:
 - 各商品のグラム単価が自動計算されます
-- 最安商品は緑色で強調表示され、👑アイコンが表示されます
+- 最安商品は青色で強調表示され、👑アイコンが表示されます
 
 ## 技術スタック
 
-- **フレームワーク**: React Native + Expo
+- **フレームワーク**: React 18
+- **ビルドツール**: Vite
 - **言語**: TypeScript
-- **スタイリング**: TailwindCSS (NativeWind)
-- **状態管理**: React Hooks (useState)
-- **テスト**: Vitest
+- **スタイリング**: Tailwind CSS
+- **状態管理**: React Hooks (useState, useCallback, useMemo)
 
 ## 開発方法
 
@@ -56,71 +56,49 @@ pnpm install
 # 開発サーバーの起動
 pnpm dev
 
-# テストの実行
-pnpm test
+# ビルド
+pnpm build
+
+# 型チェック
+pnpm check
+
+# リント
+pnpm lint
 ```
 
-### ブラウザでプレビュー
+### プロジェクト構造
 
-開発サーバー起動後、ブラウザで `http://localhost:8081` にアクセスします。
-
-### ビルド
-
-```bash
-# Webビルド
-pnpm build:web
+```
+gram-price-compare-app/
+├── src/
+│   ├── App.tsx              # メインアプリコンポーネント
+│   ├── main.tsx             # エントリーポイント
+│   ├── pages/
+│   │   ├── Calculator.tsx   # 計算画面
+│   │   └── About.tsx        # About画面
+│   ├── components/
+│   │   └── ProductCard.tsx # 商品カードコンポーネント
+│   ├── lib/
+│   │   ├── calculator.ts    # 計算ロジック
+│   │   └── utils.ts         # ユーティリティ関数
+│   └── styles/
+│       └── index.css        # グローバルスタイル
+├── index.html               # HTMLテンプレート
+├── vite.config.ts           # Vite設定
+├── tailwind.config.js       # Tailwind設定
+└── package.json
 ```
 
-ビルド後、`dist/` ディレクトリに静的ファイルが生成されます。
+## デプロイ
 
-### デプロイ
+### Vercel
 
-詳細なデプロイ手順は [DEPLOY.md](./DEPLOY.md) を参照してください。
+詳細は [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md) を参照してください。
 
-**Vercelへのデプロイ（推奨）:**
-- 詳細手順: [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md)
+### GitHub Pages
 
-**GitHub Pages:**
-- `main` ブランチにプッシュするだけで自動デプロイ
-
-## 主要な計算ロジック
-
-### グラム単価の計算
-
-```typescript
-pricePerGram = price / weight
-```
-
-例）
-- 商品A: 100円 / 500g = 0.20円/g
-- 商品B: 150円 / 1000g = 0.15円/g
-- **最安**: 商品B（0.15円/g）
-
-## テスト
-
-```bash
-# テスト実行
-pnpm test
-```
-
-**テスト項目**:
-- グラム単価の計算
-- 複数商品の比較
-- エッジケース（0値、小数点）
-- 商品IDの生成
-
-## プライバシー
-
-このアプリはインターネット接続を必要としません。すべての計算と保存がローカルで完結するため、個人情報が外部に送信されることはありません。
+詳細は [DEPLOY.md](./DEPLOY.md) を参照してください。
 
 ## ライセンス
 
-MIT License
-
-## サポート
-
-バグ報告や機能リクエストは、GitHub Issues で受け付けています。
-
----
-
-**Made by YoseiIkegami**
+このプロジェクトは個人開発プロジェクトです。

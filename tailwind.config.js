@@ -1,23 +1,22 @@
-const { themeColors } = require("./theme.config");
-
-const tailwindColors = Object.fromEntries(
-  Object.entries(themeColors).map(([name, value]) => [
-    name,
-    {
-      DEFAULT: `var(--color-${name})`,
-    },
-  ]),
-);
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // Scan all component and app files for Tailwind classes
-  content: ["./app/**/*.{js,ts,tsx}", "./components/**/*.{js,ts,tsx}", "./lib/**/*.{js,ts,tsx}", "./hooks/**/*.{js,ts,tsx}"],
-
-  presets: [require("nativewind/preset")],
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+  ],
   theme: {
     extend: {
-      colors: tailwindColors,
+      colors: {
+        primary: 'var(--color-primary)',
+        background: 'var(--color-background)',
+        surface: 'var(--color-surface)',
+        foreground: 'var(--color-foreground)',
+        muted: 'var(--color-muted)',
+        border: 'var(--color-border)',
+        success: 'var(--color-success)',
+        warning: 'var(--color-warning)',
+        error: 'var(--color-error)',
+      },
     },
   },
   plugins: [],

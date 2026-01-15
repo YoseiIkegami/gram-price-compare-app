@@ -73,11 +73,10 @@ export function findCheapestIndexes(products: Product[], tolerance: number = 0.0
 export function compareProducts(products: Product[], tolerance: number = 0.01): ComparisonResult {
   const cheapestIndex = findCheapest(products);
   const cheapestIndexes = findCheapestIndexes(products, tolerance);
-  
+
   return {
     products,
     cheapestIndex, // 最初の最安商品のindex
     cheapestIndexes, // すべての最安商品のindex
   };
 }
-
